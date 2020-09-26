@@ -7,10 +7,29 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 ```{r}
 gss <- readxl::read_xlsx("GSS.xlsx")
 str(gss)
-head(gss)
 ```
+```{r}
+gss %>% rename(
+  year = `Gss year for this respondent`,
+  happy = `General happiness`,
+  party = `Political party affiliation`,
+  race = `Race of respondent`,
+  sex = `Respondents sex`,
+  cdegree = `When received college degree`,
+  hsdegree = `When received hs degree`,
+  momdegree = `Mothers highest degree`,
+  daddegree = `Fathers highest degree`,
+  schoolyears = `Highest year of school completed`,
+  age = `Age of respondent`,
+  maried = `Marital status`,
+  id = `Respondent id number`,
+  balot = `Ballot used for interview`
+)
+```
+
