@@ -1,17 +1,18 @@
 ---
 title: "team"
-author: "Charles Yang, Julia Hernesman"
-date: "9/24/2020"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
 ```
 
-```{r Re-labeling}
-gss <- readxl::read_xlsx("GSS.xlsx")
+```{r}
+library(readxl)
+gss <- readxl::read_xls('/Users/juliahernesman/Downloads/GSS.xls')
+library(ggplot2)
+library(tidyverse)
+
 gss %>% rename(
   year = `Gss year for this respondent`,
   happy = `General happiness`,
@@ -26,36 +27,41 @@ gss %>% rename(
   age = `Age of respondent`,
   maried = `Marital status`,
   id = `Respondent id number`,
-  balot = `Ballot used for interview`
-) -> gss
-
+  balot = `Ballot used for interview`) -> gss
 str(gss)
-```
 
-```{r Cleaning}
 gss$schoolyears <- as.numeric(gss$schoolyears)
 gss$age <- as.numeric(gss$age)
-```
 
+#1
+by_party <-group_by(gss, party)
+ggplot(gss, aes(x=party, y=schoolyears)) + geom_boxplot()
 
-```{r}
-by_party <- group_by(gss, party)
-schoolyears_by_party <- by_party %>% summarize(schoolyears=mean(schoolyears, na.rm=TRUE))
-schoolyears_by_party <- na.omit(schoolyears_by_party)
-partyfactor <- factor(schoolyears_by_party$party, levels=c("Strong democrat", "Not str democrat", "Ind,near dem", "Independent", "Ind,near rep", "Not str republican", "Strong republican","Don't know", "No answer", "Other party"))
-
-ggplot(schoolyears_by_party, aes(x=partyfactor, y=schoolyears, fill=partyfactor)) +
-  geom_bar(stat="identity") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  xlab("Party") +
-  ylab("Years of School") +
-  ggtitle("Years of School by Party Affiliation") +
-  ylim(0, 20) +
-  scale_fill_manual("legend", values=c("Strong democrat"="#0C00FF", "Not str democrat"="#756EFF", "Ind,near dem"="#A39EFF", "Independent"="#FF00FB", "Ind,near rep"="#FEABAB", "Not str republican"="#FC6B6B", "Strong republican"="#FF0000", "Don't know"="#BABABA", "No answer"="#666666", "Other party"="#000000"))
-```
-
-```{r}
+#2
 betterEd <- gss %>% group_by(party) %>% filter(schoolyears > median(schoolyears, na.rm = TRUE))
 str(betterEd)
-```
 
+#3
+dat1 <- gss[gss$happy %in% c('Pretty happy', 'Very happy', 'Not too happy'),]
+dat2 <- dat1[dat1$maried %in% c('Married', 'Never married', 'Divorced'),]
+ggplot(dat2, aes(x=maried , fill=happy)) + geom_bar(position='fill')
+
+#4
+ggplot(dat2, aes(x=maried , fill=happy)) + geom_bar(position='fill') + facet_grid(party)
+
+#5
+gss$schoolyrcat[gss$schoolyears < 12] <- "less education"
+gss$schoolyrcat[gss$schoolyears >= 12] <- "more education"
+dat3 <- gss[gss$maried %in% c('Married', 'Never married', 'Divorced'),]
+dat4 <- dat3[dat3$schoolyrcat %in% c('less education', 'more education'),]
+ggplot(dat4, aes(x=schoolyrcat , fill=maried)) + geom_bar(position='fill')
+```
+##
+
+
+```{r}
+dat5 <- gss[gss$happy %in% c('Very happy', 'Pretty happy', 'Not too happy'),]
+dat6 <- dat5[dat5$schoolyrcat %in% c('less education', 'more education'),]
+ggplot(dat6, aes(x=schoolyrcat , fill=happy)) + geom_bar(position='fill')
+```
+##There are less people "not too happy" that have more education. In other words people that have more schooling tend to be happier.
